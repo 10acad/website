@@ -1,0 +1,50 @@
+version: '3.3'
+
+services:
+
+  nginx:
+    container_name: nginx
+    image: pagespeed/nginx-pagespeed:1.13.35.2
+    ports:
+        - "80:80"
+        - "443:443"
+    volumes:
+        - ./conf/nginx.conf:/etc/nginx/conf.d/nginx.conf
+        - ./conf/pagespeed.conf:/etc/nginx/conf.d/pagespeed.conf
+        - ./code:/var/www/html
+        - ./data/certbot/conf:/etc/letsencrypt
+        - ./data/certbot/www:/var/www/certbot
+    links:
+        - wordpress
+        - redis
+    restart: always
+    environment:
+      - UPLOAD_MAX_SIZE=50M
+
+  certbot:
+    image: certbot/certbot:v0.30.2
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot  
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+  redis: 
+    container_name: redis
+    image: redis:5.0.3
+    ports:
+        - "6379:6379"
+      
+  wordpress:
+    container_name: wordpress
+    build: .
+    volumes:
+      - ./code:/var/www/html
+      - ./conf/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+    ports:
+      - "9000:9000"
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: wordpress.cygrqui64set.eu-west-1.rds.amazonaws.com
+      WORDPRESS_DB_NAME: academy10
+      WORDPRESS_DB_USER: academy10
+      WORDPRESS_DB_PASSWORD: G!7ADfut6YDPr*T&xfUD

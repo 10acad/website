@@ -1,0 +1,6 @@
++ *.yml
++ code/
++ code/wp-content/
++ code/wp-content/plugins/
++ code/wp-content/plugins/**
+- *
